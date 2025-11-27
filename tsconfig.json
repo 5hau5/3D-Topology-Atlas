@@ -1,0 +1,23 @@
+{
+   "compilerOptions": {
+    "resolveJsonModule": true,
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "target": "ESNext",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": "."
+  },
+
+  /* Include all source files */
+  "include": [
+    "src",
+    "electron",
+    "vite-env.d.ts"
+  ],
+
+  "references": []
+}

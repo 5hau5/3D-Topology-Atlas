@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Topology Lesson",
+  "type": "object",
+  "required": ["meta", "scene"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "version": { "type": "string" },
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "properties": {
+        "assets": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "objects": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "annotations": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "steps": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
+      }
+    }
+  }
+}
