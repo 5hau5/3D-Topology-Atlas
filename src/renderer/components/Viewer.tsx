@@ -1,33 +1,35 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { LessonStep } from '../LessonStuff';
+import { LessonStep } from '../../LessonStuff';
 
-type Props = { currentPage: LessonStep };
+type Props = {
+  currentPage: LessonStep;
+  wireframe: boolean;
+  xray: boolean;
+  setWireframe: React.Dispatch<React.SetStateAction<boolean>>;
+  setXray: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
-export default function Viewer({ currentPage }: Props) {
-  const mountRef = useRef<HTMLDivElement|null>(null);
-  const sceneRef = useRef<THREE.Scene|null>(null);
-  const rootRef = useRef<THREE.Group|null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera|null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer|null>(null);
-  const controlsRef = useRef<OrbitControls|null>(null);
+export default function Viewer({ currentPage, wireframe, xray, setWireframe, setXray }: Props) {
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<THREE.Group | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
 
-  const [wireframe, setWireframe] = useState(false);
-  const [xray, setXray] = useState(false);
-
+  // --- Initialize scene ---
   useEffect(() => {
     const mount = mountRef.current!;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x111111);
-    sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(60, mount.clientWidth/mount.clientHeight, 0.1, 1000);
-    camera.position.set(0,1.4,2.8);
+    const camera = new THREE.PerspectiveCamera(60, mount.clientWidth / mount.clientHeight, 0.1, 1000);
+    camera.position.set(0, 1.4, 2.8);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     mount.appendChild(renderer.domElement);
     rendererRef.current = renderer;
@@ -36,56 +38,81 @@ export default function Viewer({ currentPage }: Props) {
     controls.enableDamping = true;
     controlsRef.current = controls;
 
-    scene.add(new THREE.HemisphereLight(0xffffff,0x222222,0.6));
-    const dir = new THREE.DirectionalLight(0xffffff,0.8); dir.position.set(3,10,5); scene.add(dir);
-    scene.add(new THREE.GridHelper(10,10,0x333333,0x222222));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x222222, 0.6));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(3, 10, 5);
+    scene.add(dir);
+    scene.add(new THREE.GridHelper(10, 10, 0x333333, 0x222222));
 
-    const root = new THREE.Group(); scene.add(root); rootRef.current = root;
+    const root = new THREE.Group();
+    scene.add(root);
+    rootRef.current = root;
 
-    const animate = () => { controls.update(); renderer.render(scene,camera); requestAnimationFrame(animate); };
+    const animate = () => {
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    };
     animate();
 
-    return () => { mount.removeChild(renderer.domElement); renderer.dispose(); };
+    return () => {
+      mount.removeChild(renderer.domElement);
+      renderer.dispose();
+    };
   }, []);
 
+  // --- Load page asset & apply wireframe/xray ---
   useEffect(() => {
     const root = rootRef.current!;
-    while(root.children.length) root.remove(root.children[0]);
+    while (root.children.length) root.remove(root.children[0]);
 
-    if(!currentPage.assets || currentPage.assets.length === 0) {
-      const geo = new THREE.BoxGeometry(1,1,1);
-      const mat = new THREE.MeshStandardMaterial({ color:0x00ff00 });
-      root.add(new THREE.Mesh(geo,mat));
+    const asset = currentPage.asset;
+    if (!asset) {
+      const geo = new THREE.BoxGeometry(1, 1, 1);
+      const mat = new THREE.MeshStandardMaterial({ color: 0x00ff00, wireframe });
+      root.add(new THREE.Mesh(geo, mat));
       return;
     }
 
-    currentPage.assets.forEach(async asset => {
-      if(asset.type==='glb' || asset.path.toLowerCase().endsWith('.glb')) {
-        const loader = new GLTFLoader();
-        try { const gltf = await loader.loadAsync(asset.path); root.add(gltf.scene); }
-        catch(e){ console.warn('GLB load failed', asset,e);}
+    const loader = new GLTFLoader();
+    const loadAsset = async () => {
+      try {
+        const base64 = asset.file_data.split(',')[1];
+        const binary = atob(base64);
+        const arrayBuffer = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) arrayBuffer[i] = binary.charCodeAt(i);
+
+        const gltf = await loader.parseAsync(arrayBuffer.buffer, '');
+        gltf.scene.traverse((child: any) => {
+          if (child.isMesh) {
+            child.material.wireframe = wireframe;
+            child.material.transparent = xray;
+            child.material.opacity = xray ? 0.5 : 1;
+          }
+        });
+
+        root.add(gltf.scene);
+      } catch (e) {
+        console.warn('Failed to load GLB asset', asset, e);
       }
-    });
-  }, [currentPage]);
+    };
+    loadAsset();
+  }, [currentPage, wireframe, xray]);
 
   const resetCamera = () => {
     const cam = cameraRef.current!;
-    cam.position.set(0,1.4,2.8);
-    controlsRef.current?.target.set(0,0,0);
+    cam.position.set(0, 1.4, 2.8);
+    controlsRef.current?.target.set(0, 0, 0);
     controlsRef.current?.update();
-  }
+  };
 
   return (
-    <div style={{width:'100%', height:'100%', position:'relative'}}>
-      <div ref={mountRef} style={{width:'100%', height:'100%'}} />
-      <div style={{position:'absolute', top:8, left:8, display:'flex', flexDirection:'column', gap:6}}>
-        <label style={{background:'rgba(0,0,0,0.4)', padding:6, borderRadius:6}}>
-          <input type="checkbox" checked={wireframe} onChange={e=>setWireframe(e.target.checked)} /> Wireframe
-        </label>
-        <label style={{background:'rgba(0,0,0,0.4)', padding:6, borderRadius:6}}>
-          <input type="checkbox" checked={xray} onChange={e=>setXray(e.target.checked)} /> X-ray
-        </label>
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
+      <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
         <button onClick={resetCamera}>Reset Camera</button>
+        <button onClick={() => setWireframe(w => !w)}>Wireframe</button>
+        <button onClick={() => setXray(x => !x)}>X-Ray</button>
       </div>
     </div>
   );

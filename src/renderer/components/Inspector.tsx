@@ -1,8 +1,13 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Lesson, LessonStep } from '../LessonStuff';
+import { Lesson, LessonStep } from '../../LessonStuff';
 
-type Props = { lesson: Lesson; setLesson: (l:Lesson)=>void; currentStep: number; editing: boolean };
+type Props = {
+  lesson: Lesson;
+  setLesson: (l: Lesson) => void;
+  currentStep: number;
+  editing: boolean;
+};
 
 export default function Inspector({ lesson, setLesson, currentStep, editing }: Props) {
   const step = lesson.steps[currentStep];
@@ -13,15 +18,21 @@ export default function Inspector({ lesson, setLesson, currentStep, editing }: P
     setLesson({ ...lesson, steps: newSteps });
   }
 
+
+
+
   return (
     <div>
       <h2>{lesson.meta.title}</h2>
+
       {editing ? (
-        <textarea
-          value={step.description || ''}
-          onChange={updateDescription}
-          style={{ width:'100%', height:'80%', resize:'vertical' }}
-        />
+        <>
+          <textarea
+            value={step.description || ''}
+            onChange={updateDescription}
+            style={{ width: '100%', height: '60%', resize: 'vertical' }}
+          />
+        </>
       ) : (
         <ReactMarkdown>{step.description || 'No description'}</ReactMarkdown>
       )}
