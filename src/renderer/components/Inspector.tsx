@@ -1,34 +1,30 @@
 import React from 'react';
-import { Lesson } from '../App';
+import ReactMarkdown from 'react-markdown';
+import { Lesson, LessonStep } from '../LessonStuff';
 
-export default function Inspector({ lesson, setLesson }: { lesson: Lesson; setLesson: (l: Lesson)=>void }) {
-  async function importModel() {
-    const path = await (window as any).atlasAPI.openFile([{ name: 'glb', extensions: ['glb','gltf'] }]);
-    if (!path) return;
-    const id = 'asset_' + Date.now();
-    const newLesson = {
-      ...lesson,
-      scene: {
-        ...lesson.scene,
-        assets: [...(lesson.scene.assets||[]), { id, path, type: 'glb' }],
-        objects: [...(lesson.scene.objects||[]), { id: 'obj_'+id, assetId: id }]
-      }
-    };
-    setLesson(newLesson);
+type Props = { lesson: Lesson; setLesson: (l:Lesson)=>void; currentStep: number; editing: boolean };
+
+export default function Inspector({ lesson, setLesson, currentStep, editing }: Props) {
+  const step = lesson.steps[currentStep];
+
+  function updateDescription(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const newSteps = [...lesson.steps];
+    newSteps[currentStep].description = e.target.value;
+    setLesson({ ...lesson, steps: newSteps });
   }
 
   return (
     <div>
-      <h3>{lesson.meta.title}</h3>
-      <button className="btn" onClick={importModel}>Import Model</button>
-      <h4>Assets</h4>
-      <ul>
-        {(lesson.scene.assets || []).map(a => <li key={a.id}>{a.path}</li>)}
-      </ul>
-      <h4>Annotations</h4>
-      <ul>
-        {(lesson.scene.annotations || []).map(a => <li key={a.id}>{a.text} @ {a.position.map(v=>v.toFixed(2)).join(',')}</li>)}
-      </ul>
+      <h2>{lesson.meta.title}</h2>
+      {editing ? (
+        <textarea
+          value={step.description || ''}
+          onChange={updateDescription}
+          style={{ width:'100%', height:'80%', resize:'vertical' }}
+        />
+      ) : (
+        <ReactMarkdown>{step.description || 'No description'}</ReactMarkdown>
+      )}
     </div>
   );
 }
