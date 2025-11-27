@@ -38,10 +38,10 @@ export default function Viewer({ currentPage, wireframe, xray, setWireframe, set
     controls.enableDamping = true;
     controlsRef.current = controls;
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x222222, 0.6));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-    dir.position.set(3, 10, 5);
-    scene.add(dir);
+    // scene.add(new THREE.HemisphereLight(0xffffff, 0x222222, 0.6));
+    // const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    // dir.position.set(3, 10, 5);
+    // scene.add(dir);
     scene.add(new THREE.GridHelper(10, 10, 0x333333, 0x222222));
 
     const root = new THREE.Group();
@@ -69,7 +69,7 @@ export default function Viewer({ currentPage, wireframe, xray, setWireframe, set
     const asset = currentPage.asset;
     if (!asset) {
       const geo = new THREE.BoxGeometry(1, 1, 1);
-      const mat = new THREE.MeshStandardMaterial({ color: 0x00ff00, wireframe });
+      const mat = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe });
       root.add(new THREE.Mesh(geo, mat));
       return;
     }
@@ -85,11 +85,39 @@ export default function Viewer({ currentPage, wireframe, xray, setWireframe, set
         const gltf = await loader.parseAsync(arrayBuffer.buffer, '');
         gltf.scene.traverse((child: any) => {
           if (child.isMesh) {
-            child.material.wireframe = wireframe;
-            child.material.transparent = xray;
-            child.material.opacity = xray ? 0.5 : 1;
+            const geom = child.geometry;
+
+            // remove vertex colors if present
+            if (geom.hasAttribute('color')) geom.deleteAttribute('color');
+
+            // --- FORCED LIGHT GREY MATERIAL ---
+            const mat = new THREE.MeshBasicMaterial({
+              color: 0xdddddd,
+              transparent: xray,
+              opacity: xray ? 0.5 : 1,
+            });
+
+            mat.map = null;
+            mat.vertexColors = false;
+
+            child.material = mat;
+
+            // --- EDGE LINES ---
+            const edges = new THREE.EdgesGeometry(geom);
+            const edgeLines = new THREE.LineSegments(
+              edges,
+              new THREE.LineBasicMaterial({ color: 0x000000 })
+            );
+
+            child.userData.edgeLines = edgeLines;
+            child.add(edgeLines);
+
+            edgeLines.visible = wireframe;
           }
         });
+
+
+
 
         root.add(gltf.scene);
       } catch (e) {
