@@ -1,0 +1,35 @@
+
+
+
+savelessontoserverfunction should  overwirte an exisitng lesson if the lesson getting edited is the same one, or if its a new lesson it should create a new folder under public/lessons/
+
+the folder name should be the title of the lesson (in lowercase and with underscores for space) + the amount of folders under public/lessons +1
+
+when loading lesson look for the id instead of the name
+
+add an extra flag to can use like --new in this file to save the default lesson as a new lesson with its name changed
+
+add a delete lesson button
+
+make adding lessons
+
+export asset on the current view as a glb file using a button on the bottom of inspector
+
+exporting the lessons as json file
+
+importing lessons
+
+importing assets when making a lesson
+
+removing an asset when making a lesson or editing a lesson
+
+removing a step when editing or making a lesson (must have atleast 1 step)
+
+create a blank lesson when pressing new lesson and have a cancel option on top of a save button
+
+hav a prompt for the title as the first thing when creating a lesson
+
+u cannot delete default lesson
+
+update schema to show id
+update lessonstuff to read from id

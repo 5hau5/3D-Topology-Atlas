@@ -7,6 +7,16 @@ export default defineConfig({
   publicDir: resolve(__dirname, 'public'),
   plugins: [react()],
 
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+  
   build: {
     outDir: resolve(__dirname, 'dist/renderer'),
     emptyOutDir: true,

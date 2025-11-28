@@ -1,12 +1,13 @@
 {
   "meta": {
-    "title": "Default",
+    "id": "default",
+    "title": "Default Lesson",
+    "author": "System",
     "version": "1.0",
-    "created_at": "2025-11-27T11:32:41.985Z"
+    "created_at": "2025-11-28T11:21:30.732Z"
   },
   "steps": [
     {
-      "title": "Page 1",
       "description": "This is a cube",
       "asset": {
         "name": "asset_1_cube",
@@ -15,7 +16,6 @@
       }
     },
     {
-      "title": "Page 2",
       "description": "This is a sphere",
       "asset": {
         "name": "asset_2_sphere",

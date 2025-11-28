@@ -37,11 +37,6 @@ export default function Viewer({ currentPage, wireframe, xray, setWireframe, set
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controlsRef.current = controls;
-
-    // scene.add(new THREE.HemisphereLight(0xffffff, 0x222222, 0.6));
-    // const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-    // dir.position.set(3, 10, 5);
-    // scene.add(dir);
     scene.add(new THREE.GridHelper(10, 10, 0x333333, 0x222222));
 
     const root = new THREE.Group();
@@ -115,9 +110,6 @@ export default function Viewer({ currentPage, wireframe, xray, setWireframe, set
             edgeLines.visible = wireframe;
           }
         });
-
-
-
 
         root.add(gltf.scene);
       } catch (e) {

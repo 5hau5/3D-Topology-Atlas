@@ -7,20 +7,19 @@
     "meta": {
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "title": { "type": "string" },
         "author": { "type": "string" },
         "version": { "type": "string" },
         "created_at": { "type": "string", "format": "date-time" }
       },
-      "required": ["title"]
+      "required": ["id", "title"]
     },
     "steps": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["title"],
         "properties": {
-          "title": { "type": "string" },
           "description": { "type": "string" },
           "asset": {
             "type": ["object", "null"],

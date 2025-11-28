@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import TopBar from './components/TopBar';
-import Viewer from './components/Viewer';
-import Inspector from './components/Inspector';
-import { Lesson, loadLesson } from '../LessonStuff';
+import React, { useState, useEffect } from "react";
+import TopBar from "./components/TopBar";
+import Viewer from "./components/Viewer";
+import Inspector from "./components/Inspector";
+import { Lesson, loadAllLessons, saveLesson, deleteLesson } from "../LessonStuff";
 
 export default function App() {
   const [lessonsList, setLessonsList] = useState<Lesson[]>([]);
@@ -13,20 +13,24 @@ export default function App() {
   const [xray, setXray] = useState(false);
 
   useEffect(() => {
-    const folderToLoad = 'default';
-    loadLesson(folderToLoad)
-      .then((lesson) => {
-        setLessonsList([lesson]);
-        setLesson(lesson);
-      })
-      .catch(console.error);
+    const load = async () => {
+      const loadedLessons = await loadAllLessons();
+      setLessonsList(loadedLessons);
+
+      const defaultLesson =
+        loadedLessons.find(l => l.meta.id === "default") ||
+        loadedLessons[0] ||
+        null;
+      setLesson(defaultLesson);
+      setCurrentStep(0);
+    };
+    load();
   }, []);
 
-  if (!lesson) return <div>Loading lesson...</div>;
+  if (!lesson) return <div>Loading lessons...</div>;
 
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Top bar */}
+    <div style={{ width: "100vw", height: "100vh", display: "flex", flexDirection: "column" }}>
       <TopBar
         lessonsList={lessonsList}
         setLessonsList={setLessonsList}
@@ -36,11 +40,12 @@ export default function App() {
         setCurrentStep={setCurrentStep}
         editing={editing}
         setEditing={setEditing}
+        saveLesson={async l => await saveLesson(l, lessonsList, setLessonsList)}
+        deleteLesson={async id => await deleteLesson(id, lessonsList, setLessonsList)}
       />
 
-      {/* Main content: viewer + inspector */}
-      <div style={{ flex: 1, display: 'flex' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ flex: 1, display: "flex" }}>
+        <div style={{ flex: 1, position: "relative" }}>
           <Viewer
             currentPage={lesson.steps[currentStep]}
             wireframe={wireframe}
@@ -53,10 +58,10 @@ export default function App() {
         <div
           style={{
             width: 320,
-            borderLeft: '1px solid #333',
-            overflowY: 'auto',
-            padding: '8px',
-            boxSizing: 'border-box',
+            borderLeft: "1px solid #333",
+            overflowY: "auto",
+            padding: 8,
+            boxSizing: "border-box",
           }}
         >
           <Inspector

@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "id": "default",
+    "title": "Default Lesson",
+    "author": "System",
+    "version": "1.0",
+    "created_at": "2025-11-28T11:21:30.732Z"
+  },
+  "steps": [
+    {
+      "description": "This is a cube",
+      "asset": {
+        "name": "asset_1_cube",
+        "file_data": "base64-encoded-glb-data-here", 
+        "type": "glb"
+      }
+    },
+    {
+      "description": "This is a sphere",
+      "asset": {
+        "name": "asset_2_sphere",
+        "file_data": "base64-encoded-glb-data-here",
+        "type": "glb"
+      }
+    }
+  ]
+}
